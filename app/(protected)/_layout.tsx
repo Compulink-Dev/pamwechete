@@ -1,9 +1,8 @@
-import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { AuthProvider, useAuth } from "../../contexts/AuthContext";
 import { Slot, SplashScreen } from "expo-router";
 import { useEffect } from "react";
 import { View } from "react-native";
-import ErrorBoundary from "./ErrorBoundary";
-import "../global.css";
+import ErrorBoundary from "../ErrorBoundary";
 
 SplashScreen.preventAutoHideAsync();
 
