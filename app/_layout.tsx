@@ -1,34 +1,39 @@
-import { AuthProvider, useAuth } from "../contexts/AuthContext";
-import { Slot, SplashScreen } from "expo-router";
-import { useEffect } from "react";
-import { View } from "react-native";
-import ErrorBoundary from "./ErrorBoundary";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import "react-native-reanimated";
 import "../global.css";
 
-SplashScreen.preventAutoHideAsync();
-
-function InitialLayout() {
-  const { isLoading } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading) {
-      SplashScreen.hideAsync();
-    }
-  }, [isLoading]);
-
-  if (isLoading) {
-    return <View style={{ flex: 1, backgroundColor: "#FFFFFF" }} />;
-  }
-
-  return <Slot />;
-}
+import { AuthProvider } from "@/utils/authContext";
+import React from "react";
 
 export default function RootLayout() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <InitialLayout />
-      </AuthProvider>
-    </ErrorBoundary>
+    <AuthProvider>
+      <StatusBar style="auto" />
+      <StatusBar style="auto" />
+      <Stack>
+        <Stack.Screen
+          name="(protected)"
+          options={{
+            headerShown: false,
+            animation: "none",
+          }}
+        />
+        <Stack.Screen
+          name="login"
+          options={{
+            animation: "none",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="register"
+          options={{
+            animation: "none",
+            headerShown: false,
+          }}
+        />
+      </Stack>
+    </AuthProvider>
   );
 }

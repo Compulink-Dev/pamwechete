@@ -1,33 +1,27 @@
-import { AuthProvider, useAuth } from "../../contexts/AuthContext";
-import { Slot, SplashScreen } from "expo-router";
-import { useEffect } from "react";
-import { View } from "react-native";
-import ErrorBoundary from "../ErrorBoundary";
+import { AuthContext } from "@/utils/authContext";
+import { Redirect, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useContext } from "react";
+import "react-native-reanimated";
 
-SplashScreen.preventAutoHideAsync();
+export const unstable_settings = {
+  initialRouteName: "(tabs)", // anchor
+};
 
-function InitialLayout() {
-  const { isLoading } = useAuth();
+export default function ProtectedLayout() {
+  const authState = useContext(AuthContext);
 
-  useEffect(() => {
-    if (!isLoading) {
-      SplashScreen.hideAsync();
+  if (!authState.isReady)
+    if (!authState.isLoggedIn) {
+      return <Redirect href={"/login"} />;
     }
-  }, [isLoading]);
 
-  if (isLoading) {
-    return <View style={{ flex: 1, backgroundColor: "#FFFFFF" }} />;
-  }
-
-  return <Slot />;
-}
-
-export default function RootLayout() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <InitialLayout />
-      </AuthProvider>
-    </ErrorBoundary>
+    <React.Fragment>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+      <StatusBar style="auto" />
+    </React.Fragment>
   );
 }
