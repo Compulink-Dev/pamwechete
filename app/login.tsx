@@ -31,6 +31,9 @@ export default function Login() {
     <SafeAreaView style={styles.container}>
       <View style={styles.form}>
         <Text style={styles.title} className="">
+          Pamwechete
+        </Text>
+        <Text style={styles.subtitle} className="">
           Login
         </Text>
 
@@ -84,8 +87,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
   input: {
     height: 50,
@@ -93,6 +98,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
+    color: "black",
   },
   footer: {
     flexDirection: "row",

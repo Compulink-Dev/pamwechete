@@ -2,7 +2,7 @@ import { SwipeCard } from "@/components/SwipeCard";
 import { Listing } from "@/types";
 import { useAuth } from "@/utils/authContext";
 import { useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View, Alert } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const API_URL = "https://pamwechete-server.onrender.com/api/v1";
@@ -19,7 +19,6 @@ export default function Home() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-          // Filter out user's own trades and map to Listing format
           const filteredTrades = data.data
             .filter((trade: any) => trade.user._id !== user?._id)
             .map((trade: any) => ({
@@ -35,14 +34,16 @@ export default function Home() {
                 0
               ),
               cashValue: trade.cashAmount || 0,
-              distance: Math.floor(Math.random() * 10) + 1, // Random distance for demo
+              distance: Math.floor(Math.random() * 10) + 1,
               owner: {
                 id: trade.user._id,
                 displayName: trade.user.username,
-                photoURL: "", // Add if available
-                rating: 4.5, // Default rating
+                photoURL: "",
+                rating: 4.5,
               },
               createdAt: new Date(trade.createdAt),
+              type: trade.type,
+              items: trade.items, // Include full items array
             }));
 
           setListings(filteredTrades);
@@ -59,20 +60,55 @@ export default function Home() {
     console.log("Swiped left - Not interested");
     setCurrentIndex((prev) => prev + 1);
   };
+  const handleSwipeRight = async () => {
+    if (currentIndex >= listings.length) return;
 
-  const handleSwipeRight = () => {
-    console.log("Swiped right - Interested in trade");
-    setCurrentIndex((prev) => prev + 1);
+    const currentListing = listings[currentIndex];
+    console.log("Swiped right - Interested in trade", currentListing.id);
+
+    try {
+      const response = await fetch(`${API_URL}/favorites`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+        body: JSON.stringify({
+          tradeId: currentListing.id,
+        }),
+      });
+
+      // First check if the response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`Unexpected response: ${text}`);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to add to favorites");
+      }
+
+      Alert.alert("Success", "Trade added to favorites!");
+      setCurrentIndex((prev) => prev + 1);
+    } catch (error: any) {
+      console.error("Error adding to favorites:", error);
+      Alert.alert(
+        "Error",
+        typeof error.message === "string"
+          ? error.message
+          : "Failed to add to favorites. Please try again."
+      );
+    }
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Pamwechete</Text>
-          <Text style={styles.subtitle}>
-            Swipe right to trade, left to pass
-          </Text>
+          <Text style={styles.subtitle}>Swipe right to save, left to pass</Text>
         </View>
 
         <View style={styles.cardsContainer}>
