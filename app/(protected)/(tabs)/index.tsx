@@ -60,11 +60,11 @@ export default function Home() {
     console.log("Swiped left - Not interested");
     setCurrentIndex((prev) => prev + 1);
   };
+
   const handleSwipeRight = async () => {
     if (currentIndex >= listings.length) return;
 
     const currentListing = listings[currentIndex];
-    console.log("Swiped right - Interested in trade", currentListing.id);
 
     try {
       const response = await fetch(`${API_URL}/favorites`, {
@@ -78,31 +78,45 @@ export default function Home() {
         }),
       });
 
-      // First check if the response is JSON
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      let data;
+
+      if (contentType?.includes("application/json")) {
+        data = await response.json();
+      } else {
         const text = await response.text();
         throw new Error(`Unexpected response: ${text}`);
       }
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to add to favorites");
+        throw new Error(
+          data.error || data.message || "Failed to add to favorites"
+        );
       }
 
-      Alert.alert("Success", "Trade added to favorites!");
-      setCurrentIndex((prev) => prev + 1);
+      Alert.alert("Success", "Trade added to favorites!", [
+        { text: "OK", onPress: () => setCurrentIndex((prev) => prev + 1) },
+      ]);
     } catch (error: any) {
       console.error("Error adding to favorites:", error);
       Alert.alert(
         "Error",
-        typeof error.message === "string"
-          ? error.message
-          : "Failed to add to favorites. Please try again."
+        error.message || "Failed to add to favorites. Please try again.",
+        [
+          {
+            text: "Try Again",
+            onPress: () => handleSwipeRight(), // Retry same card
+          },
+          {
+            text: "Next",
+            onPress: () => setCurrentIndex((prev) => prev + 1),
+            style: "cancel",
+          },
+        ]
       );
     }
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <GestureHandlerRootView style={{ flex: 1 }}>
